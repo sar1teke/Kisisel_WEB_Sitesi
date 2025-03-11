@@ -259,7 +259,10 @@ const FluidWaveAnimation = () => {
       canvas.width = width;
       canvas.height = height;
       particlesRef.current = [];
-      const particleCount = Math.floor((width * height) / 3000);
+      // Mobil cihazlarda daha az partikül kullanarak performansı optimize edelim
+      const isMobile = window.innerWidth <= 768;
+      const particleDensity = isMobile ? 5000 : 3000;
+      const particleCount = Math.floor((width * height) / particleDensity);
       for (let i = 0; i < particleCount; i++) {
         const x = Math.random() * width;
         const y = Math.random() * height;
@@ -349,7 +352,7 @@ const FluidWaveAnimation = () => {
     };
 
     const handleTouchMove = (e) => {
-      e.preventDefault();
+      // e.preventDefault() kaldırıldı, kaydırma engellenmeyecek
       for (let i = 0; i < e.touches.length; i++) {
         const touch = e.touches[i];
         activePointersRef.current[touch.identifier] = {
@@ -379,7 +382,7 @@ const FluidWaveAnimation = () => {
     drawFluid();
 
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true }); // passive: true eklenerek kaydırma serbest bırakıldı
     window.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('resize', handleResize);
 
@@ -477,14 +480,14 @@ const AboutPage = () => {
           <List variants={staggerContainer} initial="hidden" animate="visible">
             <ListItem variants={fadeInUp}>
               <strong>Turkcell</strong><br />
-              İç Kontrol ve Sürekli İyileştirme - Uzun Dönem Stajyer (Şubat 2025 - Mayıs 2025)
+              İç Kontrol ve Sürekli İyileştirme - Uzun Dönem Stajyer (Şubat 2025 - Devam Ediyor)
               <Paragraph variants={fadeInUp}>
                 Turkcell'de İç Kontrol ve Sürekli İyileştirme biriminde aktif olarak staj yapmaktayım.
               </Paragraph>
             </ListItem>
             <ListItem variants={fadeInUp}>
               <strong>SM Otomasyon Mühendislik</strong><br />
-              Junior Software Developer (Ekim 2024 - Devam Ediyor)
+              Junior Software Developer (Ekim 2024 - Ocak 2025)
               <Paragraph variants={fadeInUp}>
                 SM Otomasyon Mühendislik'te Yazılım Departmanı bünyesinde .Net Framework geliştirici olarak çalışıyorum. Bu süreçte, 5 eksenli bir kesim makinesinin simülasyonu üzerine yoğun çalışmalar yaptım. .Net WPF ile kullanıcı dostu bir arayüz geliştirdim; backend için C# kullanıp simülasyon için HelixToolKit kütüphanesini tercih ettim. 5 eksenli simülasyonun işlevleri arasında çizim ekranı, çizilen şeklin özelliklerini gösteren bir ekran, çalışma prensiplerini anlattığım bir eğitim sayfası, simülasyon ekranı ve G-Code ile XML çıktıları yer alıyor.
               </Paragraph>

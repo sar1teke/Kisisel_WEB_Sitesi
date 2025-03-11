@@ -48,7 +48,7 @@ const Footer = () => {
         <FooterLink to="/projects">Projeler</FooterLink>
         <FooterLink to="/contact">İletişim</FooterLink>
       </FooterLinks>
-      <Copyright>© {new Date().getFullYear()} Kişisel Evren. Tüm hakları saklıdır.</Copyright>
+      <Copyright>© {new Date().getFullYear()} Tüm hakları saklıdır.</Copyright>
     </FooterContainer>
   );
 };

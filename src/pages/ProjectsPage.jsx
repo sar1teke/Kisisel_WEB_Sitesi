@@ -7,8 +7,8 @@ const AnimatedBackground = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   z-index: -1;
   overflow: hidden;
 `;
@@ -21,6 +21,7 @@ const GradientOrb = styled(motion.div)`
   background: ${props => props.color};
   width: ${props => props.size}px;
   height: ${props => props.size}px;
+  transform: translate(-50%, -50%);
 
   @media (max-width: 768px) {
     width: ${props => props.size * 0.8}px;
@@ -39,11 +40,14 @@ const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 80px 20px 20px; /* Added padding-top to avoid overlapping with Navbar */
+  padding: 80px 20px 20px;
   color: var(--color-text);
   min-height: 100vh;
   position: relative;
   z-index: 1;
+  width: 99vw;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Yatay taşmayı önler */
 
   &::after {
     content: '';

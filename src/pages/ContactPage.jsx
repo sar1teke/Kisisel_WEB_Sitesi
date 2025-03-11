@@ -3,6 +3,9 @@ import { motion } from 'framer-motion';
 import { FaEnvelope, FaPhone, FaInstagram, FaLinkedin, FaGithub, FaYinYang } from 'react-icons/fa';
 import { SiKaggle } from 'react-icons/si';
 import styled from 'styled-components';
+import {useState} from 'react';
+import { db } from '../firebaseConfig.js'; // Adjust the path based on your folder structure
+import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 
 const PageContainer = styled.div`
   display: flex;
@@ -323,6 +326,62 @@ const socialLinks = [
 ];
 
 const ContactPage = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const checkIfUserExists = async (email) => {
+    const q = query(collection(db, 'users'), where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty; // Returns true if user exists
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      // Save the message to the 'messages' collection
+      await addDoc(collection(db, 'messages'), {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Check if the user already exists in the 'users' collection
+      const userExists = await checkIfUserExists(formData.email);
+
+      if (!userExists) {
+        // Save the user to the 'users' collection if they don't exist
+        await addDoc(collection(db, 'users'), {
+          name: formData.name,
+          email: formData.email,
+          createdAt: new Date().toISOString(),
+        });
+      }
+
+      setSuccess(true);
+      setFormData({ name: '', email: '', message: '' }); // Reset form
+    } catch (err) {
+      setError('Mesaj gönderilirken bir hata oluştu.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
   const iconVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -339,6 +398,8 @@ const ContactPage = () => {
     animate: { opacity: 1, y: 0, transition: { delay: 0.4 } },
     hover: { scale: 1.05, transition: { duration: 0.2 } }
   };
+ 
+ 
 
   return (
     <PageContainer>
@@ -350,28 +411,52 @@ const ContactPage = () => {
           animate="animate"
           style={{ flex: 2 }}
         >
-          <ContactForm>
+          <ContactForm as="form" onSubmit={handleSubmit}>
             <FormGroup>
               <Label>Ad Soyad</Label>
-              <Input type="text" placeholder="Ad Soyad" />
+              <Input
+                type="text"
+                name="name"
+                placeholder="Ad Soyad"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
             </FormGroup>
             <FormGroup>
               <Label>Email</Label>
-              <Input type="email" placeholder="E-mail Adresiniz" />
+              <Input
+                type="email"
+                name="email"
+                placeholder="E-mail Adresiniz"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
             </FormGroup>
             <FormGroup>
               <Label>Mesaj</Label>
-              <TextArea placeholder="Nasıl Yardımcı Olabilirim?" />
+              <TextArea
+                name="message"
+                placeholder="Nasıl Yardımcı Olabilirim?"
+                value={formData.message}
+                onChange={handleChange}
+                required
+              />
             </FormGroup>
             <SubmitButton
+              type="submit"
               variants={buttonVariants}
               initial="initial"
               animate="animate"
               whileHover="hover"
               whileTap={{ scale: 0.98 }}
+              disabled={loading}
             >
-              Gönder
+              {loading ? 'Gönderiliyor...' : 'Gönder'}
             </SubmitButton>
+            {success && <p style={{ color: '#7d5aff', marginTop: '10px' }}>Mesaj başarıyla gönderildi!</p>}
+            {error && <p style={{ color: '#ff5a78', marginTop: '10px' }}>{error}</p>}
           </ContactForm>
         </motion.div>
 
@@ -393,7 +478,7 @@ const ContactPage = () => {
             </SocialIcon>
           ))}
           <CVButton
-            href="src/assets/Ismail_Sariteke_CV_2025.pdf"
+            href="/assets/Ismail_Sariteke_CV_2025.pdf"
             download="Ismail_Sariteke_CV_2025.pdf"
             variants={buttonVariants}
             initial="initial"

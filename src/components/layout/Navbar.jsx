@@ -41,7 +41,7 @@ const Logo = styled(Link)`
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  white-space: nowrap; /* Prevent text wrapping */
+  white-space: nowrap;
 
   @media (max-width: 1024px) {
     font-size: 1.6rem;
@@ -49,6 +49,7 @@ const Logo = styled(Link)`
 
   @media (max-width: 768px) {
     font-size: 1.4rem;
+    display: ${props => (props.isHome ? 'block' : 'none')};
   }
 
   @media (max-width: 480px) {
@@ -102,11 +103,6 @@ const NavLink = styled(Link)`
   &.active {
     color: #ff5a78;
   }
-
-  @media (max-width: 1024px) {
-    font-size: 0.95rem;
-    padding: 5px 8px;
-  }
 `;
 
 const MenuButton = styled.button`
@@ -117,6 +113,9 @@ const MenuButton = styled.button`
   cursor: pointer;
   z-index: 102;
   display: none;
+  position: absolute;
+  top: 15px;
+  right: 15px;
   transition: transform 0.3s ease;
 
   &:hover {
@@ -129,6 +128,8 @@ const MenuButton = styled.button`
 
   @media (max-width: 480px) {
     font-size: 1.5rem;
+    top: 10px;
+    right: 10px;
   }
 `;
 
@@ -137,7 +138,7 @@ const MobileMenuOverlay = styled(motion.div)`
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   background: linear-gradient(135deg, rgba(5, 5, 5, 0.95), rgba(10, 10, 20, 0.95));
   z-index: 101;
   display: flex;
@@ -146,6 +147,7 @@ const MobileMenuOverlay = styled(motion.div)`
   align-items: center;
   gap: 30px;
   backdrop-filter: blur(10px);
+  overflow: hidden;
 
   @media (max-width: 480px) {
     gap: 20px;
@@ -157,7 +159,6 @@ const MobileNavLink = styled(Link)`
   text-decoration: none;
   font-size: 2rem;
   font-weight: 600;
-  position: relative;
   transition: color 0.3s ease;
 
   &:hover {
@@ -167,24 +168,14 @@ const MobileNavLink = styled(Link)`
   &.active {
     color: #ff5a78;
   }
-
-  @media (max-width: 1024px) {
-    font-size: 1.8rem;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 1.6rem;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 1.4rem;
-  }
 `;
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -219,15 +210,6 @@ const Navbar = () => {
     }
   };
 
-  const linkVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: i => ({
-      opacity: 1,
-      y: 0,
-      transition: { delay: i * 0.1, duration: 0.5 }
-    })
-  };
-
   const links = [
     { path: '/', label: 'Ana Sayfa' },
     { path: '/about', label: 'Hakkımda' },
@@ -237,15 +219,13 @@ const Navbar = () => {
 
   return (
     <NavContainer scrolled={scrolled}>
-      <Logo to="/">İsmail Sarıteke</Logo>
+      <Logo to="/" isHome={isHomePage}>
+        İsmail Sarıteke
+      </Logo>
 
       <DesktopMenu>
         {links.map(link => (
-          <NavLink
-            key={link.path}
-            to={link.path}
-            className={location.pathname === link.path ? 'active' : ''}
-          >
+          <NavLink key={link.path} to={link.path} className={location.pathname === link.path ? 'active' : ''}>
             {link.label}
           </NavLink>
         ))}
@@ -257,28 +237,11 @@ const Navbar = () => {
 
       <AnimatePresence>
         {mobileMenuOpen && (
-          <MobileMenuOverlay
-            variants={menuVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            {links.map((link, i) => (
-              <motion.div
-                key={link.path}
-                custom={i}
-                variants={linkVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                <MobileNavLink
-                  to={link.path}
-                  onClick={closeMobileMenu}
-                  className={location.pathname === link.path ? 'active' : ''}
-                >
-                  {link.label}
-                </MobileNavLink>
-              </motion.div>
+          <MobileMenuOverlay variants={menuVariants} initial="hidden" animate="visible" exit="exit">
+            {links.map(link => (
+              <MobileNavLink key={link.path} to={link.path} onClick={closeMobileMenu}>
+                {link.label}
+              </MobileNavLink>
             ))}
           </MobileMenuOverlay>
         )}
